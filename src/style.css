@@ -1,0 +1,121 @@
+/* Centering the main box */
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f7f8fa;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Styling the main box */
+main {
+  width: 400px;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+/* Feedback message */
+.feedback {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #dc3545;
+}
+
+/* Todo item container styling */
+.todo-container {
+  margin-top: 16px;
+  padding: 0;
+  list-style-type: none;
+}
+
+/* Todo item styling */
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Icons for todo items */
+.todo-item i {
+  margin-right: 8px;
+  font-style: normal;
+}
+
+.todo-item i.danger {
+  color: #dc3545;
+}
+
+.todo-item i.success {
+  color: #28a745;
+}
+
+/* Remove button */
+.delete-sm {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.done-sm {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.group {
+  display: flex;
+  gap: 4px;
+}
+
+.delete-sm:hover {
+  background-color: #c82333;
+}
