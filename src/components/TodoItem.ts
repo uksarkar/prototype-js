@@ -6,13 +6,13 @@ import {
 } from "../lib";
 import { removeTodo, Todo, updateTodo } from "../states/todo-db";
 
-export function TodoItem({ label, id, done }: Todo) {
+export function TodoItem(todo: () => Todo) {
   const [isLoading, setIsLoading] = createSignal(false);
 
   function onDelete() {
     setIsLoading(true);
     setTimeout(() => {
-      removeTodo(id);
+      removeTodo(todo().id);
       setIsLoading(false);
     }, 3000);
   }
@@ -34,8 +34,8 @@ export function TodoItem({ label, id, done }: Todo) {
 
       const sign = createComponent({
         tagName: "i",
-        classes: () => (done ? "success" : "danger"),
-        children: done ? "✔" : "✖"
+        classes: () => (todo().done ? "success" : "danger"),
+        children: textComponent(() => (todo().done ? "✔" : "✖"))
       });
 
       const doneButton = conditionalComponent(
@@ -43,15 +43,15 @@ export function TodoItem({ label, id, done }: Todo) {
           tagName: "button.done-sm",
           children: "Done",
           events: {
-            click: () => updateTodo(id, "done", true)
+            click: () => updateTodo(todo().id, "done", true)
           }
         },
-        () => !done
+        () => !todo().done
       );
 
       return [
         sign,
-        label,
+        textComponent(() => todo().label),
         createComponent({
           tagName: "div.group",
           children: [doneButton, deleteButton]

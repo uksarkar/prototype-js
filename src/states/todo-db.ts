@@ -24,7 +24,16 @@ createEffect(() => {
 });
 
 export function addTodo(todo: Omit<Todo, "id">) {
-  setTodoItems(items => [...items, { ...todo, id: crypto.randomUUID() }]);
+  setTodoItems(items => [{ ...todo, id: crypto.randomUUID() }, ...items]);
+}
+
+export function addAt(todo: Omit<Todo, "id">, position: number) {
+  setTodoItems(items => {
+    const arr = [...items];
+    arr.splice(position, 0, { ...todo, id: crypto.randomUUID() });
+
+    return arr;
+  });
 }
 
 export function removeTodo(id: string) {

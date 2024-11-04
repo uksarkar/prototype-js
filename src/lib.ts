@@ -40,15 +40,6 @@ export function createSignal<T>(
 }
 
 // Component management
-export function textComponent(text: () => string): Text {
-  const t = document.createTextNode("");
-  createEffect(() => {
-    t.textContent = text();
-  });
-
-  return t;
-}
-
 type ComponentChild =
   | string
   | number
@@ -199,6 +190,15 @@ export function createComponent({
   return root;
 }
 
+export function textComponent(text: () => string): Text {
+  const t = document.createTextNode("");
+  createEffect(() => {
+    t.textContent = text();
+  });
+
+  return t;
+}
+
 // Conditionally render an element
 // strategy `display` will be show/hide by setting display: none,
 // and the `remove` will work by removing and adding the element
@@ -270,13 +270,19 @@ export function conditionalComponent(
 
 export function listComponent<T extends object>(
   items: () => T[],
-  renderItem: (item: T, index: number) => ComponentChild
+  renderItem: (item: () => T, index: number) => ComponentChild
 ): ComponentChild[] {
   const itemMap = new Map<
     T,
-    { element: Text | DocumentFragment | Comment | HTMLElement; id: string }
+    {
+      element: Text | DocumentFragment | Comment | HTMLElement;
+      id: string;
+      setter: ReturnType<typeof createSignal<T>>[1];
+      position: number;
+    }
   >();
   let parentNode: Node | undefined;
+  let referenceElm: Comment | undefined;
 
   // Create effect to reactively handle the list
   createEffect(() => {
@@ -284,9 +290,15 @@ export function listComponent<T extends object>(
 
     // Determine the parent node if not set
     if (!parentNode) {
-      const elm = itemMap.values().next().value;
-      if (elm?.element.parentNode) {
-        parentNode = elm?.element.parentNode;
+      if (referenceElm && referenceElm.parentNode) {
+        parentNode = referenceElm.parentNode;
+        parentNode.removeChild(referenceElm);
+        referenceElm = undefined;
+      } else {
+        const elm = itemMap.values().next().value;
+        if (elm?.element.parentNode) {
+          parentNode = elm?.element.parentNode;
+        }
       }
     }
 
@@ -300,28 +312,43 @@ export function listComponent<T extends object>(
 
     // Add or update items
     currentItems.forEach((item, i) => {
-      // Check if the item is already in the map
       let obj = itemMap.get(item);
       const id = JSON.stringify(item);
+      const isPositionChanged = obj?.position !== i;
 
       if (!obj) {
-        let newElement = renderItem(item, i);
+        const [getter, setter] = createSignal(item);
+        let newElement = renderItem(getter, i);
+
+        // Convert primitive to TextNode if needed
         if (typeof newElement === "string" || typeof newElement === "number") {
           newElement = document.createTextNode(String(newElement));
         }
 
-        // Append to parent and update map
-        parentNode?.appendChild(newElement);
-        itemMap.set(item, { id, element: newElement });
+        obj = { id, element: newElement, position: i, setter };
+        itemMap.set(item, obj);
       } else if (id !== obj.id) {
-        // update happened
-        let newElement = renderItem(item, i);
-        if (typeof newElement === "string" || typeof newElement === "number") {
-          newElement = document.createTextNode(String(newElement));
+        // Update existing item
+        obj.setter(() => item);
+        obj.id = id;
+        obj.position = i;
+      }
+
+      if (obj && isPositionChanged) {
+        const targetPosition = Array.from(parentNode?.childNodes ?? []).find(
+          (_, index) => index === i
+        );
+
+        if (targetPosition !== obj.element) {
+          if (targetPosition) {
+            parentNode?.insertBefore(obj.element, targetPosition);
+          } else {
+            parentNode?.appendChild(obj.element);
+          }
         }
 
-        parentNode?.replaceChild(newElement, obj.element);
-        itemMap.set(item, { id, element: newElement });
+        obj.position = i;
+        itemMap.set(item, obj);
       }
     });
   });
@@ -330,6 +357,12 @@ export function listComponent<T extends object>(
   const elements = Array.from(itemMap.values()).map(
     ({ element }) => element
   ) as ComponentChild[];
+
+  // to track the parent element
+  if (!elements.length) {
+    referenceElm = document.createComment("render list items");
+    elements.push(referenceElm);
+  }
 
   return elements;
 }

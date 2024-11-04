@@ -4,7 +4,7 @@ import {
   createSignal,
   inputComponent
 } from "../lib";
-import { addTodo } from "../states/todo-db";
+import { addAt, addTodo } from "../states/todo-db";
 
 export function TodoForm() {
   const [text, setText] = createSignal("");
@@ -14,10 +14,13 @@ export function TodoForm() {
       return;
     }
 
-    addTodo({
-      done: false,
-      label: text()
-    });
+    addAt(
+      {
+        done: false,
+        label: text()
+      },
+      1
+    );
     setText("");
   }
 
